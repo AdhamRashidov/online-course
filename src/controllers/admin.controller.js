@@ -1,6 +1,9 @@
 import Admin from '../models/admin.model.js';
 import { BaseController } from './base.controller.js';
 import crypto from '../utils/Crypto.js';
+import validator from '../validation/AdminValidation.js';
+import token from '../utils/Token.js';
+import config from '../config/index.js';
 
 class AdminController extends BaseController {
     constructor() {
@@ -9,6 +12,14 @@ class AdminController extends BaseController {
 
     async createAdmin(req, res) {
         try {
+            const { error } = validator.create(req.body);
+            if (error) {
+                return res.status(422).json({
+                    statusCode: 422,
+                    message: error?.details[0]?.message ?? 'Error input validation'
+                })
+            }
+
             const { username, email, password, hashedPassword } = req.body;
             const adminPass = password || hashedPassword;
             const existsUsername = await Admin.findOne({ username });
@@ -50,6 +61,14 @@ class AdminController extends BaseController {
 
     async signIn(req, res) {
         try {
+            const { error } = validator.signin(req.body);
+            if (error) {
+                return res.status(422).json({
+                    statusCode: 422,
+                    message: error?.details[0]?.message ?? 'Error input validation'
+                });
+            }
+
             const { username, password } = req.body;
             const admin = await Admin.findOne({ username });
             const isMatchedPassword = await crypto.decrypt(password, admin?.hashedPassword ?? '');
@@ -59,10 +78,100 @@ class AdminController extends BaseController {
                     message: 'Username or password incorrect'
                 });
             }
+
+            const payload = {
+                id: admin._id, role: admin.role, isActive: admin.isActive
+            };
+            const accessToken = token.generateAccessToken(payload);
+            const refreshToken = token.generateRefreshToken(payload);
+            token.writeToCookie(res, 'refreshTokenAdmin', refreshToken, 30);
+
             return res.status(200).json({
                 statusCode: 200,
                 message: 'success',
-                data: admin
+                data: {
+                    token: accessToken,
+                    admin
+                }
+            });
+        } catch (error) {
+            return res.status(500).json({
+                statusCode: 500,
+                message: error.message || 'Internal Server Error'
+            });
+        }
+    }
+
+    async generateNewToken(req, res) {
+        try {
+            const refreshToken = req.cookies?.refreshTokenAdmin;
+            if (!refreshToken) {
+                return res.status(401).json({
+                    statusCode: 401,
+                    message: 'Refresh token not found'
+                });
+            }
+            const verifiedToken = token.verifyToken(refreshToken, config.TOKEN.REFRESH_TOKEN_KEY);
+            if (!verifiedToken) {
+                return res.status(401).json({
+                    statusCode: 401,
+                    message: 'Refresh token expire'
+                });
+            }
+            const admin = await Admin.findById(verifiedToken?.id);
+            if (!admin) {
+                return res.status(403).json({
+                    statusCode: 403,
+                    message: 'Forbidden user'
+                });
+            }
+            const payload = {
+                id: admin._id, role: admin.role, isActive: admin.isActive
+            }
+            const accessToken = token.generateAccessToken(payload);
+            return res.status(200).json({
+                statusCode: 200,
+                message: 'success',
+                data: {
+                    token: accessToken
+                }
+            });
+        } catch (error) {
+            return res.status(500).json({
+                statusCode: 500,
+                message: error.message || 'Internal Server Error'
+            });
+        }
+    }
+
+    async signOut(req, res) {
+        try {
+            const refreshToken = req.cookies?.refreshTokenAdmin;
+            if (!refreshToken) {
+                return res.status(401).josn({
+                    statusCode: 401,
+                    message: 'Refresh token Not Found'
+                });
+            }
+            const verifiedToken = token.verifyToken(refreshToken, config.TOKEN.REFRESH_TOKEN_KEY);
+            if (!verifiedToken) {
+                return res.status(401).json({
+                    statusCode: 401,
+                    message: 'Refresh token expire'
+                });
+            }
+            const admin = await Admin.findById(verifiedToken?.id);
+            if (!admin) {
+                return res.status(403).json({
+                    statusCode: 403,
+                    message: 'Forbidden user'
+                });
+            }
+            res.clearCookie('refreshTokenAdmin');
+            return res.status(200).json({
+                statusCode: 200,
+                message: 'success',
+                data: {}
             });
         } catch (error) {
             return res.status(500).json({
