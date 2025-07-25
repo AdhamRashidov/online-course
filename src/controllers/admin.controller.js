@@ -1,7 +1,6 @@
 import Admin from '../models/admin.model.js';
 import { BaseController } from './base.controller.js';
 import crypto from '../utils/Crypto.js';
-import validator from '../validation/AdminValidation.js';
 import token from '../utils/Token.js';
 import config from '../config/index.js';
 
@@ -12,16 +11,7 @@ class AdminController extends BaseController {
 
     async createAdmin(req, res) {
         try {
-            const { error } = validator.create(req.body);
-            if (error) {
-                return res.status(422).json({
-                    statusCode: 422,
-                    message: error?.details[0]?.message ?? 'Error input validation'
-                })
-            }
-
-            const { username, email, password, hashedPassword } = req.body;
-            const adminPass = password || hashedPassword;
+            const { username, email, password } = req.body;
             const existsUsername = await Admin.findOne({ username });
             if (existsUsername) {
                 return res.status(409).json({
@@ -38,11 +28,11 @@ class AdminController extends BaseController {
                 });
             }
 
-            const hashedPass = await crypto.encrypt(adminPass);
+            const hashedPassword = await crypto.encrypt(password);
             const admin = await Admin.create({
                 username,
                 email,
-                hashedPassword: hashedPass
+                hashedPassword
             });
 
             return res.status(201).json({
@@ -61,14 +51,6 @@ class AdminController extends BaseController {
 
     async signIn(req, res) {
         try {
-            const { error } = validator.signin(req.body);
-            if (error) {
-                return res.status(422).json({
-                    statusCode: 422,
-                    message: error?.details[0]?.message ?? 'Error input validation'
-                });
-            }
-
             const { username, password } = req.body;
             const admin = await Admin.findOne({ username });
             const isMatchedPassword = await crypto.decrypt(password, admin?.hashedPassword ?? '');
@@ -148,7 +130,7 @@ class AdminController extends BaseController {
         try {
             const refreshToken = req.cookies?.refreshTokenAdmin;
             if (!refreshToken) {
-                return res.status(401).josn({
+                return res.status(401).json({
                     statusCode: 401,
                     message: 'Refresh token Not Found'
                 });

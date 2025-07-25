@@ -23,7 +23,11 @@ class Token {
     }
 
     verifyToken(token, secretKey) {
-        return jwt.verify(token, secretKey);
+        try {
+            return jwt.verify(token, secretKey);
+        } catch (error) {
+            return null
+        }
     }
 }
 
