@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "restart": "node --watch src/main.js",
-    "start": "node src/helpers/create-super-admin.js"
+    "superadmin": "node src/helpers/create-super-admin.js"
   },
   "keywords": [],
   "author": "",

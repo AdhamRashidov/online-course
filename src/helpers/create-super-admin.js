@@ -7,10 +7,11 @@ import config from '../config/index.js';
 (async function () {
     try {
         await connectDB();
-        const hashedPassword = await crypto.encrypt(config.SUPERADMIN_PASSWORD);
+
+        const hashedPassword = await crypto.encrypt(config.ADMIN.SUPERADMIN_PASSWORD);
         await Admin.create({
-            username: config.SUPERADMIN_USERNAME,
-            email: config.SUPERADMIN_EMAIL,
+            username: config.ADMIN.SUPERADMIN_USERNAME,
+            email: config.ADMIN.SUPERADMIN_EMAIL,
             hashedPassword,
             role: 'SUPERADMIN'
         });
@@ -18,5 +19,6 @@ import config from '../config/index.js';
         await disconnect();
     } catch (error) {
         console.log('Error ON Creating Super Admin', error);
+        process.exit(1);
     }
 }());
