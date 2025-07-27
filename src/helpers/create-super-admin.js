@@ -7,7 +7,6 @@ import config from '../config/index.js';
 (async function () {
     try {
         await connectDB();
-
         const hashedPassword = await crypto.encrypt(config.ADMIN.SUPERADMIN_PASSWORD);
         await Admin.create({
             username: config.ADMIN.SUPERADMIN_USERNAME,

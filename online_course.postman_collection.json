@@ -7,7 +7,7 @@
 	},
 	"item": [
 		{
-			"name": "create admin",
+			"name": "generate new token",
 			"request": {
 				"method": "GET",
 				"header": []
@@ -15,7 +15,7 @@
 			"response": []
 		},
 		{
-			"name": "signIn",
+			"name": "create new Admin",
 			"request": {
 				"method": "GET",
 				"header": []
@@ -23,7 +23,7 @@
 			"response": []
 		},
 		{
-			"name": "new token",
+			"name": "get all",
 			"request": {
 				"method": "GET",
 				"header": []
@@ -31,7 +31,7 @@
 			"response": []
 		},
 		{
-			"name": "sign out",
+			"name": "new admin signIn",
 			"request": {
 				"method": "GET",
 				"header": []

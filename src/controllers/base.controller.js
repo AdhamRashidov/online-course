@@ -1,4 +1,6 @@
 import { isValidObjectId } from "mongoose";
+import { AppError } from '../error/AppError.js';
+import { successRes } from '../utils/success-res.js';
 
 export class BaseController {
     constructor(model) {
@@ -6,134 +8,81 @@ export class BaseController {
     }
 
     // post
-    create = async (req, res) => {
+    create = async (req, res, next) => {
         try {
             const data = await this.model.create(req.body);
-            return res.status(201).json({
-                statusCode: 201,
-                message: 'success',
-                data
-            });
+            return successRes(res, data, 201);
         } catch (error) {
-            return res.status(500).json({
-                statusCode: 500,
-                message: error.message || 'Internal Server Error'
-            });
+            next(error);
         }
     }
 
     // get 
-    findAll = async (_, res) => {
+    findAll = async (_, res, next) => {
         try {
             const data = await this.model.find();
-            return res.status(200).json({
-                statusCode: 200,
-                message: 'success',
-                data
-            });
+            return successRes(res, data);
         } catch (error) {
-            return res.status(500).json({
-                statusCode: 500,
-                message: error.message || 'Internal Server Error'
-            });
+            next(error);
         }
     }
 
     // get by id
-    findById = async (req, res) => {
+    findById = async (req, res, next) => {
         try {
             const id = req.params?.id;
             if (!isValidObjectId(id)) {
-                return res.status(400).json({
-                    statusCode: 400,
-                    message: 'Invalid ObjectId'
-                });
+                throw new AppError('Invalid ObjectId', 400);
             }
 
             const data = await this.model.findById(id);
             if (!data) {
-                return res.status(404).json({
-                    statusCode: 404,
-                    message: 'Not Found',
-                });
+                throw new AppError('Not found', 404);
             }
 
-            return res.status(200).json({
-                statusCode: 200,
-                message: 'success',
-                data
-            });
+            return successRes(res, data);
 
         } catch (error) {
-            return res.status(500).json({
-                statusCode: 500,
-                message: error.message || 'Internal Server Error'
-            });
+            next(error);
         }
     }
 
     // update
-    update = async (req, res) => {
+    update = async (req, res, next) => {
         try {
             const id = req.params?.id;
             if (!isValidObjectId(id)) {
-                return res.status(400).json({
-                    statusCode: 400,
-                    message: 'Invalid ObjectId'
-                });
+                throw new AppError('Invalid ObjectId', 400);
             }
 
             const data = await this.model.findByIdAndUpdate(id, req.body, { new: true });
             if (!data) {
-                return res.status(404).json({
-                    statusCode: 404,
-                    message: 'Not Found'
-                });
+                throw new AppError('Not found', 404);
             }
 
-            return res.status(200).json({
-                statusCode: 200,
-                message: 'success',
-                data
-            });
+            return successRes(res, data);
 
         } catch (error) {
-            return res.status(500).json({
-                statusCode: 500,
-                message: error.message || 'Internal Server Error'
-            });
+            next(error);
         }
     }
 
     // delete
-    delete = async (req, res) => {
+    delete = async (req, res, next) => {
         try {
             const id = req.params?.id;
             if (!isValidObjectId(id)) {
-                return res.status(400).json({
-                    statusCode: 400,
-                    message: 'Invalid ObjectId'
-                });
+                throw new AppError('InvalId ObjectId', 400);
             }
 
             const data = await this.model.findByIdAndDelete(id);
             if (!data) {
-                return res.status(404).json({
-                    statusCode: 404,
-                    message: 'Not Found'
-                });
+                throw new AppError('Not found', 404);
             }
 
-            return res.status(200).json({
-                statusCode: 200,
-                message: 'success',
-                data: {}
-            })
+            return successRes(res, {});
         } catch (error) {
-            return res.status(500).json({
-                statusCode: 500,
-                message: error.message || 'Internal Server Error'
-            });
+            next(error);
         }
     }
 }

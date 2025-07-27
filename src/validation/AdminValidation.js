@@ -1,7 +1,7 @@
 import Joi from "joi";
-const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&-])[A-Za-z\d@$!%*?&-]{8,}$/;
 
 class AdminValidator {
+    static passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&-])[A-Za-z\d@$!%*?&-]{8,}$/;
 
     create() {
         return Joi.object({
@@ -14,7 +14,7 @@ class AdminValidator {
                 'string.empty': "email yozilishi shart! bo'sh bo'lmasin",
                 'string.email': "email formati noto'g'ri"
             }),
-            password: Joi.string().required().pattern(passRegex).messages({
+            password: Joi.string().required().pattern(AdminValidator.passRegex).messages({
                 'string.base': "parol satr bo'lishi kerak",
                 'string.empty': "parol yozilishi shart! bo'sh bo'lmasin",
                 'string.pattern.base': "parol kuchli emas!"
@@ -38,7 +38,7 @@ class AdminValidator {
                 'string.base': "email satr bo'lishi kerak",
                 'string.email': "email formati noto'g'ri"
             }),
-            password: Joi.string().optional().pattern(passRegex).messages({
+            password: Joi.string().optional().pattern(AdminValidator.passRegex).messages({
                 'string.base': "parol satr bo'lishi kerak",
                 'string.pattern.base': "parol kuchli emas."
             })
