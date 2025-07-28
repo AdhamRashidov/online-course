@@ -44,6 +44,13 @@ class AdminValidator {
             })
         });
     }
+
+    password() {
+        return Joi.object({
+            oldPassword: Joi.string().required(),
+            newPassword: Joi.string().pattern(AdminValidator.passRegex).required()
+        });
+    }
 }
 
 export default new AdminValidator();

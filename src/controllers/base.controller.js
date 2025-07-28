@@ -85,4 +85,15 @@ export class BaseController {
             next(error);
         }
     }
+
+    static async checkById(schmea, id) {
+        if (!isValidObjectId(id)) {
+            throw new AppError('Invalid object id', 400);
+        }
+        const data = await schmea.findById(id);
+        if (!data) {
+            throw new AppError('Not found', 404);
+        }
+        return data;
+    }
 }

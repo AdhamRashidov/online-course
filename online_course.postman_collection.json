@@ -37,6 +37,14 @@
 				"header": []
 			},
 			"response": []
+		},
+		{
+			"name": "rate-limit",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
 		}
 	]
 }

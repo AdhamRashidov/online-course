@@ -109,6 +109,57 @@ class AdminController extends BaseController {
             next(error);
         }
     }
+
+    async updateAdmin(req, res, next) {
+        try {
+            const id = req.params?.id;
+            const admin = await BaseController.checkById(id);
+            const { username, email, password } = req.body;
+            if (username) {
+                const exists = await Admin.findOne({ username });
+                if (exists && exists.username !== username) {
+                    throw new AppError('Username already exists', 409);
+                }
+            }
+            if (email) {
+                const exists = await Admin.findOne({ email });
+                if (exists && exists.email !== email) {
+                    throw new AppError('Email adress already exists', 409);
+                }
+            }
+            let hashedPassword = admin.hashedPassword;
+            if (password) {
+                if (req.user?.role != admin.role) {
+                    throw new AppError('Not access to change password for admin', 403);
+                }
+                hashedPassword = await crypto.encrypt(password);
+                delete req.body.password;
+            }
+            const updateAdmin = await Admin.findByIdAndUpdate(id, {
+                ...req.body, hashedPassword
+            }, { new: true });
+            return successRes(res, updateAdmin);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async updatePasswordForAdmin(req, res, next) {
+        try {
+            const id = req.params?.id;
+            const admin = await BaseController.checkById(Admin, id);
+            const { oldPassword, newPassword } = req.body;
+            const isMatchedPassword = await crypto.decrypt(oldPassword, admin.hashedPassword);
+            if (!isMatchedPassword) {
+                throw new AppError('Incorrect old password', 400);
+            }
+            const hashedPassword = await crypto.encrypt(newPassword);
+            const updateAdmin = await Admin.findByIdAndUpdate(id, { hashedPassword }, { new: true });
+            return successRes(res, updateAdmin);
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 export default new AdminController();
