@@ -1,4 +1,5 @@
 import { Schema, model } from "mongoose";
+import { Roles } from "../const";
 
 const OwnerSchema = new Schema({
     email: { type: String, required: true, unique: true },
@@ -7,7 +8,8 @@ const OwnerSchema = new Schema({
     isActive: { type: Boolean, default: true },
     hashedPassword: { type: String, required: true },
     wallet: { type: Number, unique: true },
-    experience: { type: String }
+    experience: { type: String },
+    role: {type: String, default: Roles.OWNER}
 }, { timestamps: true, versionKey: false });
 
 const Owner = model('Owner', OwnerSchema);
